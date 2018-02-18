@@ -8,8 +8,8 @@ module.exports = {
       const res = await request
         .get(URL)
         .query({
-          start_time: `${start} 00:00`,
-          end_time: `${end} 23:59`,
+          start_time: start,
+          end_time: end,
           is_get_used_time: 1,
         });
 

@@ -5,7 +5,7 @@
   "scripts": {
     "deps:install": "npm i --prefix src",
     "deps:copy": "cp -r src/node_modules dist/node_modules",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist dist.zip",
     "transpile": "babel src -d dist --ignore node_modules",
     "build": "npm-run-all clean transpile deps:*",
     "zip": "zip -r -X dist.zip dist",

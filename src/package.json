@@ -2,8 +2,8 @@
   "name": "italki-telegram-bot",
   "version": "1.0.0",
   "dependencies": {
+    "date-fns": "^1.29.0",
     "lodash": "^4.17.5",
-    "moment": "^2.20.1",
     "superagent": "^3.8.2"
   }
 }

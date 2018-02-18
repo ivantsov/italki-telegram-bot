@@ -1,5 +1,5 @@
 const _ = require('lodash/fp');
-const moment = require('moment');
+const dateFns = require('date-fns');
 const italki = require('./api/italki');
 const telegram = require('./api/telegram');
 
@@ -17,10 +17,19 @@ function getDiff(prev, next) {
 
 function formatMessage(arr) {
   return _.flow(
-    _.map(item => ({
-      date: moment(item.utc_start_time).format('DD MMMM'),
-      time: `${moment(item.utc_start_time).format('LT')} - ${moment(item.utc_end_time).format('LT')}`,
-    })),
+    _.map(({
+      utc_start_time,
+      utc_end_time,
+    }) => {
+      // add timezone
+      const startTZ = dateFns.addHours(utc_start_time, 1);
+      const endTZ = dateFns.addHours(utc_end_time, 1);
+
+      return {
+        date: dateFns.format(startTZ, 'DD MMMM'),
+        time: `${dateFns.format(startTZ, 'HH:mm')} - ${dateFns.format(endTZ, 'HH:mm')}`,
+      };
+    }),
     _.groupBy('date'),
     _.reduce.convert({cap: false})((result, times, date) => {
       const lines = times.map(({time}) => `- ${time}`).join('\n');
@@ -30,9 +39,12 @@ function formatMessage(arr) {
 }
 
 exports.handler = async function() {
-  const tomorrow = moment().add({days: 1});
-  const threeWeeksLater = tomorrow.add({weeks: 4});
-  const schedule = await getSchedule(tomorrow.format('YYYY-MM-DD'), threeWeeksLater.format('YYYY-MM-DD'));
+  const tomorrowStart = dateFns.startOfTomorrow();
+  const fourWeeksLater = dateFns.addWeeks(dateFns.endOfTomorrow(), 4);
+  const schedule = await getSchedule(
+    dateFns.format(tomorrowStart, 'YYYY-MM-DD HH:mm'),
+    dateFns.format(fourWeeksLater, 'YYYY-MM-DD HH:mm')
+  );
 
   const prevSchedule = [...schedule].filter(() => Math.random() > 0.6);
   const nextSchedule = [...schedule].filter(() => Math.random() > 0.4);

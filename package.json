@@ -1,0 +1,39 @@
+{
+  "name": "italki-telegram-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "zip": "zip -r -X dist.zip dist",
+    "aws": "aws lambda update-function-code --function-name checkItalkiSchedule --zip-file fileb://dist.zip --publish",
+    "deploy": "npm run build && npm run zip && npm run aws"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivantsov/italki-telegram-bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ivantsov/italki-telegram-bot/issues"
+  },
+  "homepage": "https://github.com/ivantsov/italki-telegram-bot#readme",
+  "dependencies": {
+    "lodash": "^4.17.5",
+    "moment": "^2.20.1",
+    "superagent": "^3.8.2",
+    "telegraf": "^3.18.0",
+    "webpack-bundle-analyzer": "^2.10.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-lodash": "^3.3.2",
+    "babel-preset-env": "^1.6.1",
+    "clean-webpack-plugin": "^0.1.18",
+    "uglifyjs-webpack-plugin": "^1.2.0",
+    "webpack": "^3.11.0"
+  }
+}

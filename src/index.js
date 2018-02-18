@@ -5,7 +5,7 @@ const telegram = require('./api/telegram');
 
 async function getSchedule(start, end) {
   const data = await italki.loadSchedule(start, end);
-  return _.differenceBy(data.schedule_dic_s, data.tea_used_time_dic, 'utc_start_time');
+  return _.differenceBy('utc_start_time', data.schedule_dic_s, data.tea_used_time_dic);
 }
 
 function getDiff(prev, next) {

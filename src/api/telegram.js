@@ -1,8 +1,10 @@
-import Telegraf from 'telegraf/telegram';
-import Extra from 'telegraf/extra';
+const Telegraf = require('telegraf/telegram');
+const Extra = require('telegraf/extra');
 
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
-export function send(message) {
-  bot.sendMessage(process.env.TELEGRAM_CHAT_ID, message, Extra.markdown());
-}
+module.exports = {
+  send(message) {
+    bot.sendMessage(process.env.TELEGRAM_CHAT_ID, message, Extra.markdown())
+  },
+};

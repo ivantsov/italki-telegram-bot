@@ -1,7 +1,7 @@
-import _ from 'lodash/fp';
-import moment from 'moment';
-import * as italki from './api/italki';
-import * as telegram from './api/telegram';
+const _ = require('lodash/fp');
+const moment = require('moment');
+const italki = require('./api/italki');
+const telegram = require('./api/telegram');
 
 async function getSchedule(start, end) {
   const data = await italki.loadSchedule(start, end);

@@ -1,10 +1,22 @@
-const Telegraf = require('telegraf/telegram');
-const Extra = require('telegraf/extra');
+const request = require('superagent');
 
-const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
+const URL = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}`;
 
 module.exports = {
-  send(message) {
-    bot.sendMessage(process.env.TELEGRAM_CHAT_ID, message, Extra.markdown())
+  async send(text) {
+    try {
+      await request
+        .post(`${URL}/sendMessage`)
+        .send({
+          chat_id: process.env.TELEGRAM_CHAT_ID,
+          text,
+          parse_mode: 'markdown',
+        });
+    }
+    catch (err) {
+      const res = err.response.body;
+      throw new Error(`[${res.error_code}] ${res.description}`);
+    }
   },
 };
+

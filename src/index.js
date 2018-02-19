@@ -12,7 +12,7 @@ function getDiff(prev, next) {
   };
 }
 
-function formatMessage(arr) {
+function formatSchedule(arr) {
   const formattedTime = arr.map(item => {
     // add timezone
     const startTZ = dateFns.addHours(item.utc_start_time, 1);
@@ -34,6 +34,22 @@ function formatMessage(arr) {
 
     return `${result}\n*${date}*\n_${lines}_`;
   }, '');
+}
+
+function formatMessage({added, removed}) {
+  let msg = '';
+  if (added.length) {
+    msg += `✅ The following times got \`free\` 👍 ${formatSchedule(
+      added,
+    )}\n\n`;
+  }
+  if (removed.length) {
+    msg += `🆘 The following times got \`booked\` 🤦‍ ${formatSchedule(
+      removed,
+    )}`;
+  }
+
+  return msg;
 }
 
 async function getPreviousSchedule() {
@@ -63,20 +79,10 @@ exports.handler = async function() {
   ]);
 
   const diff = getDiff(prevSchedule, nextSchedule);
-
   if (diff.added.length || diff.removed.length) {
     await Promise.all([
       db.addOrUpdate(nextSchedule),
-      telegram.send(
-        [
-          `✅ The following times got \`free\` 👍 ${formatMessage(
-            nextSchedule,
-          )}`,
-          `️🆘 The following times got \`booked\` 🤦‍ ${formatMessage(
-            nextSchedule,
-          )}`,
-        ].join('\n\n'),
-      ),
+      telegram.send(formatMessage(diff)),
     ]);
   }
 };

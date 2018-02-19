@@ -4,6 +4,7 @@
   "dependencies": {
     "axios": "^0.17.1",
     "date-fns": "^1.29.0",
-    "lodash": "^4.17.5",
+    "lodash.differenceby": "^4.8.0",
+    "lodash.groupby": "^4.6.0"
   }
 }

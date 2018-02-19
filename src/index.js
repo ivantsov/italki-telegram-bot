@@ -1,57 +1,86 @@
-const _ = require('lodash/fp');
+const differenceBy = require('lodash.differenceby');
+const groupBy = require('lodash.groupby');
 const dateFns = require('date-fns');
 const italki = require('./api/italki');
 const telegram = require('./api/telegram');
+const db = require('./db');
 
 async function getSchedule(start, end) {
   const data = await italki.loadSchedule(start, end);
-  return _.differenceBy('utc_start_time', data.schedule_dic_s, data.tea_used_time_dic);
+  return differenceBy(
+    data.schedule_dic_s,
+    data.tea_used_time_dic,
+    'utc_start_time',
+  );
 }
 
 function getDiff(prev, next) {
   return {
-    added: _.differenceBy('utc_start_time', next, prev),
-    removed: _.differenceBy('utc_start_time', prev, next),
+    added: differenceBy(next, prev, 'utc_start_time'),
+    removed: differenceBy(prev, next, 'utc_start_time'),
   };
 }
 
 function formatMessage(arr) {
-  return _.flow(
-    _.map(({
-      utc_start_time,
-      utc_end_time,
-    }) => {
-      // add timezone
-      const startTZ = dateFns.addHours(utc_start_time, 1);
-      const endTZ = dateFns.addHours(utc_end_time, 1);
+  const formattedTime = arr.map(item => {
+    // add timezone
+    const startTZ = dateFns.addHours(item.utc_start_time, 1);
+    const endTZ = dateFns.addHours(item.utc_end_time, 1);
 
-      return {
-        date: dateFns.format(startTZ, 'DD MMMM'),
-        time: `${dateFns.format(startTZ, 'HH:mm')} - ${dateFns.format(endTZ, 'HH:mm')}`,
-      };
-    }),
-    _.groupBy('date'),
-    _.reduce.convert({cap: false})((result, times, date) => {
-      const lines = times.map(({time}) => `- ${time}`).join('\n');
-      return `${result}\n*${date}*\n_${lines}_`;
-    }, '')
-  )(arr);
+    return {
+      date: dateFns.format(startTZ, 'DD MMMM'),
+      time: `${dateFns.format(startTZ, 'HH:mm')} - ${dateFns.format(
+        endTZ,
+        'HH:mm',
+      )}`,
+    };
+  });
+
+  const groupedByDate = groupBy(formattedTime, 'date');
+
+  return Object.keys(groupedByDate).reduce((result, date) => {
+    const lines = groupedByDate[date].map(({time}) => `- ${time}`).join('\n');
+
+    return `${result}\n*${date}*\n_${lines}_`;
+  }, '');
+}
+
+async function getPreviousSchedule() {
+  const {Item: data} = await db.get();
+  return data ? data.items : [];
+}
+
+function getNextSchedule() {
+  const tomorrowStart = dateFns.startOfTomorrow();
+  const fourWeeksLater = dateFns.addWeeks(dateFns.endOfTomorrow(), 4);
+
+  return getSchedule(
+    dateFns.format(tomorrowStart, 'YYYY-MM-DD HH:mm'),
+    dateFns.format(fourWeeksLater, 'YYYY-MM-DD HH:mm'),
+  );
 }
 
 exports.handler = async function() {
-  const tomorrowStart = dateFns.startOfTomorrow();
-  const fourWeeksLater = dateFns.addWeeks(dateFns.endOfTomorrow(), 4);
-  const schedule = await getSchedule(
-    dateFns.format(tomorrowStart, 'YYYY-MM-DD HH:mm'),
-    dateFns.format(fourWeeksLater, 'YYYY-MM-DD HH:mm')
-  );
+  const [prevSchedule, nextSchedule] = await Promise.all([
+    getPreviousSchedule(),
+    getNextSchedule(),
+  ]);
 
-  const prevSchedule = [...schedule].filter(() => Math.random() > 0.6);
-  const nextSchedule = [...schedule].filter(() => Math.random() > 0.4);
   const diff = getDiff(prevSchedule, nextSchedule);
 
-  telegram.send([
-    `✅ The following times got \`free\` 👍 ${formatMessage(diff.added)}`,
-    `️🆘 The following times got \`booked\` 🤦‍ ${formatMessage(diff.removed)}`
-  ].join('\n\n'));
+  if (diff.added.length || diff.removed.length) {
+    await Promise.all([
+      db.addOrUpdate(nextSchedule),
+      telegram.send(
+        [
+          `✅ The following times got \`free\` 👍 ${formatMessage(
+            nextSchedule,
+          )}`,
+          `️🆘 The following times got \`booked\` 🤦‍ ${formatMessage(
+            nextSchedule,
+          )}`,
+        ].join('\n\n'),
+      ),
+    ]);
+  }
 };

@@ -5,15 +5,6 @@ const italki = require('./api/italki');
 const telegram = require('./api/telegram');
 const db = require('./db');
 
-async function getSchedule(start, end) {
-  const data = await italki.loadSchedule(start, end);
-  return differenceBy(
-    data.schedule_dic_s,
-    data.tea_used_time_dic,
-    'utc_start_time',
-  );
-}
-
 function getDiff(prev, next) {
   return {
     added: differenceBy(next, prev, 'utc_start_time'),
@@ -50,13 +41,18 @@ async function getPreviousSchedule() {
   return data ? data.items : [];
 }
 
-function getNextSchedule() {
+async function getNextSchedule() {
   const tomorrowStart = dateFns.startOfTomorrow();
   const fourWeeksLater = dateFns.addWeeks(dateFns.endOfTomorrow(), 4);
-
-  return getSchedule(
+  const data = await italki.loadSchedule(
     dateFns.format(tomorrowStart, 'YYYY-MM-DD HH:mm'),
     dateFns.format(fourWeeksLater, 'YYYY-MM-DD HH:mm'),
+  );
+
+  return differenceBy(
+    data.schedule_dic_s,
+    data.tea_used_time_dic,
+    'utc_start_time',
   );
 }
 

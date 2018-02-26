@@ -19,7 +19,7 @@ function formatSchedule(arr) {
     const endTZ = dateFns.addHours(item.utc_end_time, 1);
 
     return {
-      date: dateFns.format(startTZ, 'DD MMMM'),
+      date: dateFns.format(startTZ, 'DD MMMM (dddd)'),
       time: `${dateFns.format(startTZ, 'HH:mm')} - ${dateFns.format(
         endTZ,
         'HH:mm',

@@ -12,11 +12,12 @@ function getDiff(prev, next) {
   };
 }
 
+const TIMEZONE_DIFF = 2; // timezone diff b/w server and local
+
 function formatSchedule(arr) {
   const formattedTime = arr.map(item => {
-    // add timezone
-    const startTZ = dateFns.addHours(item.utc_start_time, 1);
-    const endTZ = dateFns.addHours(item.utc_end_time, 1);
+    const startTZ = dateFns.addHours(item.utc_start_time, TIMEZONE_DIFF);
+    const endTZ = dateFns.addHours(item.utc_end_time, TIMEZONE_DIFF);
 
     return {
       date: dateFns.format(startTZ, 'DD MMMM (dddd)'),

@@ -1,14 +1,14 @@
 const {DynamoDB} = require('aws-sdk');
 
-const TABLE_NAME = 'italki-schedule';
+const tableName = process.env.TABLE_NAME;
 const ID = 1;
 
-const db = new DynamoDB.DocumentClient({region: process.env.AWS_REGION});
+const db = new DynamoDB.DocumentClient();
 
 function get() {
   return db
     .get({
-      TableName: TABLE_NAME,
+      TableName: tableName,
       Key: {
         id: ID,
       },
@@ -19,7 +19,7 @@ function get() {
 function addOrUpdate(data) {
   return db
     .put({
-      TableName: TABLE_NAME,
+      TableName: tableName,
       Item: {
         id: ID,
         items: data,

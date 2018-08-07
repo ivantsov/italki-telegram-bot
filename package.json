@@ -5,14 +5,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
-    "deps:install": "npm i --prefix src",
-    "deps:copy": "cp -r src/node_modules dist/node_modules",
-    "clean": "rm -rf dist dist.zip",
-    "transpile": "babel src -d dist --ignore node_modules",
-    "build": "npm-run-all clean transpile deps:*",
-    "zip": "zip -r -X dist.zip dist",
-    "publish": "aws lambda update-function-code --function-name checkItalkiSchedule --zip-file fileb://dist.zip --publish",
-    "deploy": "npm-run-all build zip publish"
+    "format": "prettier --write \"**/*.{js,json,md}\"",
+    "format:check": "prettier --list-different \"**/*.{js,json,md}\""
   },
   "repository": {
     "type": "git",
@@ -25,19 +19,18 @@
     "url": "https://github.com/ivantsov/italki-telegram-bot/issues"
   },
   "homepage": "https://github.com/ivantsov/italki-telegram-bot#readme",
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.2.3",
-    "babel-preset-env": "^1.6.1",
-    "eslint": "^4.19.1",
-    "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-config-prettier": "^2.9.0",
-    "eslint-plugin-import": "^2.11.0",
-    "eslint-plugin-prettier": "^2.6.0",
-    "npm-run-all": "^4.1.2",
-    "prettier": "^1.12.1"
-  },
   "dependencies": {
-    "aws-sdk": "^2.230.1"
+    "axios": "^0.18.0",
+    "date-fns": "^1.29.0",
+    "lodash.differenceby": "^4.8.0",
+    "lodash.groupby": "^4.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.3.0",
+    "eslint-config-airbnb-base": "^13.0.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-prettier": "^2.6.2",
+    "prettier": "^1.14.0"
   }
 }

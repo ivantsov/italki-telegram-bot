@@ -1,0 +1,37 @@
+service: italki-telegram-bot
+provider:
+  name: aws
+  region: eu-central-1
+  runtime: nodejs8.10
+  memorySize: 128
+  environment:
+    TABLE_NAME: ${self:service}-table
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+    - dynamodb:GetItem
+    - dynamodb:PutItem
+    Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME}"
+functions:
+  main:
+    handler: src/index.handler
+    events:
+    - schedule: rate(1 hour)
+resources:
+  Resources:
+    scheduleTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TABLE_NAME}
+        AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+        KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+package:
+  exclude:
+    - .idea/**

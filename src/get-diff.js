@@ -2,10 +2,11 @@ const differenceBy = require('lodash.differenceby');
 const dateFns = require('date-fns');
 
 function getRemoved(prev, next) {
-  const prevWithoutPastDates = prev.filter(
-    ({utc_start_time}) => !dateFns.isPast(utc_start_time),
+  const prevWithoutToday = prev.filter(
+    ({utc_start_time}) => !dateFns.isToday(utc_start_time),
   );
-  return differenceBy(prevWithoutPastDates, next, 'utc_start_time');
+
+  return differenceBy(prevWithoutToday, next, 'utc_start_time');
 }
 
 module.exports = function(prev, next) {
